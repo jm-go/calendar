@@ -11,7 +11,20 @@ public class Main {
     }
 
     public List<String[]> seeTimeBlocks (String[] calendar1, String[] dailyBounds1, String[] calendar2, String[] dailyBounds2, int meetingDuration) {
-        //TODO: everything
+        // Extend and parse calendars
+        List<int[]> extendedCalendar1 = extendCalendarWithBounds(calendar1, dailyBounds1);
+        List<int[]> extendedCalendar2 = extendCalendarWithBounds(calendar2, dailyBounds2);
+
+        // Merge calendars
+        List<int[]> mergedCalendar = mergeCalendars(extendedCalendar1, extendedCalendar2);
+
+        // Calculate the endOfWorkday in minutes from midnight
+        int endOfWorkday1 = parseTimeToMinutes(dailyBounds1[1]);
+        int endOfWorkday2 = parseTimeToMinutes(dailyBounds2[1]);
+        int endOfWorkday = Math.min(endOfWorkday1, endOfWorkday2);
+
+        // Find available time blocks
+        findAvailableSlots(mergedCalendar, meetingDuration, endOfWorkday);
         return null;
     }
 
@@ -73,5 +86,53 @@ public class Main {
         return mergedAndCleaned;
     }
 
+    /**
+     * Identifies available slots between two merged calendars for scheduling a meeting.
+     *
+     * @param mergedCalendar Sorted list of occupied time blocks in minutes from midnight.
+     * @param meetingDuration Duration of the meeting in minutes.
+     * @param endOfWorkday Latest time a meeting can end, in minutes from midnight.
+     * @return List of available time slots in "HH:MM" format.
+     */
+    private List<String[]> findAvailableSlots(List<int[]> mergedCalendar, int meetingDuration, int endOfWorkday) {
+        List<String[]> availableSlots = new ArrayList<>();
+        int endOfLastMeeting = mergedCalendar.get(0)[1]; // Assume starting after the first meeting
+
+        for (int i = 1; i < mergedCalendar.size(); i++) {
+            int startOfNextMeeting = mergedCalendar.get(i)[0];
+            // Check if the gap between meetings is enough for the meetingDuration
+            if (startOfNextMeeting - endOfLastMeeting >= meetingDuration) {
+                // Add this time slot to the list of available slots
+                availableSlots.add(new String[]{
+                        minutesToTime(endOfLastMeeting),
+                        minutesToTime(startOfNextMeeting)
+                });
+            }
+            // Update the end of the last meeting to the end of the current meeting
+            endOfLastMeeting = Math.max(endOfLastMeeting, mergedCalendar.get(i)[1]);
+        }
+
+        // Final check for the slot between the last meeting and the end of the workday
+        if (endOfWorkday - endOfLastMeeting >= meetingDuration) {
+            availableSlots.add(new String[] {
+                    minutesToTime(endOfLastMeeting),
+                    minutesToTime(endOfWorkday)
+            });
+        }
+
+        return availableSlots;
+    }
+
+    /**
+     * Converts minutes from midnight to a time string in "HH:MM" format.
+     *
+     * @param minutes The number of minutes from midnight.
+     * @return A string representing the time in "HH:MM" format.
+     */
+    private String minutesToTime(int minutes) {
+        int hours = minutes / 60;
+        int mins = minutes % 60;
+        return String.format("%02d:%02d", hours, mins);
+    }
 
 }
