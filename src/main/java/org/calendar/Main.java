@@ -1,6 +1,7 @@
 package org.calendar;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class Main {
@@ -41,6 +42,35 @@ public class Main {
         }
         extendedCalendar.add(new int[]{parseTimeToMinutes(dailyBounds[1]), 24 * 60});
         return extendedCalendar;
+    }
+
+    /**
+     * Merges and consolidates overlapping time blocks from two calendars into a single list.
+     * Both input lists are assumed to include daily bounds and are formatted as start and end times
+     * in minutes from midnight. The merged output list contains no overlapping time blocks.
+     *
+     * @param calendar1 First calendar's list of time blocks.
+     * @param calendar2 Second calendar's list of time blocks.
+     * @return A list of non-overlapping merged time blocks from both calendars.
+     */
+    private List<int[]> mergeCalendars(List<int[]> calendar1, List<int[]> calendar2) {
+        List<int[]> merged = new ArrayList<>(calendar1);
+        merged.addAll(calendar2);
+        merged.sort(Comparator.comparingInt(a -> a[0])); // Sort by start time
+
+        // Merge overlapping intervals
+        List<int[]> mergedAndCleaned = new ArrayList<>();
+        int[] currentMeeting = merged.get(0);
+        mergedAndCleaned.add(currentMeeting);
+        for (int[] meeting : merged) {
+            if (meeting[0] <= currentMeeting[1]) { // Check for overlap
+                currentMeeting[1] = Math.max(meeting[1], currentMeeting[1]);
+            } else {
+                currentMeeting = meeting;
+                mergedAndCleaned.add(currentMeeting);
+            }
+        }
+        return mergedAndCleaned;
     }
 
 
