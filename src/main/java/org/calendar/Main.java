@@ -15,6 +15,7 @@ public class Main {
 
         List<String[]> availableSlots = calendar.seeTimeBlocks(calendar1, dailyBounds1, calendar2, dailyBounds2, meetingDuration);
 
+        System.out.println("\nAvailable time slots for your meeting:");
         for (String[] slot : availableSlots) {
             System.out.println(slot[0] + " - " + slot[1]);
         }
