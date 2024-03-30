@@ -1,7 +1,5 @@
 package org.calendar;
 
-import java.util.List;
-
 public class Main {
     public static void main(String[] args) {
 
@@ -14,17 +12,7 @@ public class Main {
         String[] dailyBounds2 = {"10:00", "18:30"};
         int meetingDuration = 30;
 
-        List<String[]> availableSlots = calendar.seeTimeBlocks(calendar1, dailyBounds1, calendar2, dailyBounds2, meetingDuration);
-
-        System.out.println("\nAvailable time slots for your meeting:");
-        if (availableSlots != null && !availableSlots.isEmpty()) {
-            for (String[] slot : availableSlots) {
-                System.out.println(slot[0] + " - " + slot[1]);
-            }
-        } else {
-            System.out.println("No available slots.");
-        }
-
+        calendar.printTimeBlocks(calendar.getTimeBlocks(calendar1, dailyBounds1, calendar2, dailyBounds2, meetingDuration));
     }
 
 }

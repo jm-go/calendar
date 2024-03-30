@@ -3,6 +3,7 @@ package org.calendar;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Calendar {
 
@@ -18,7 +19,7 @@ public class Calendar {
      * @param meetingDuration Required duration of the meeting in minutes.
      * @return List of mutual available time slots as ["start", "end"] in "HH:MM" format.
      */
-    public List<String[]> seeTimeBlocks (String[] calendar1, String[] dailyBounds1, String[] calendar2, String[] dailyBounds2, int meetingDuration) {
+    public List<String[]> getTimeBlocks(String[] calendar1, String[] dailyBounds1, String[] calendar2, String[] dailyBounds2, int meetingDuration) {
         // Extend and parse calendars
         List<int[]> extendedCalendar1 = extendCalendarWithBounds(calendar1, dailyBounds1);
         List<int[]> extendedCalendar2 = extendCalendarWithBounds(calendar2, dailyBounds2);
@@ -80,14 +81,14 @@ public class Calendar {
 
         // Merge overlapping intervals
         List<int[]> mergedAndCleaned = new ArrayList<>();
-        int[] currentMeeting = merged.get(0);
-        mergedAndCleaned.add(currentMeeting);
+        int[] previousMeeting = merged.get(0);
+        mergedAndCleaned.add(previousMeeting);
         for (int[] meeting : merged) {
-            if (meeting[0] <= currentMeeting[1]) { // Check for overlap
-                currentMeeting[1] = Math.max(meeting[1], currentMeeting[1]);
+            if (meeting[0] <= previousMeeting[1]) { // Check for overlap
+                previousMeeting[1] = Math.max(meeting[1], previousMeeting[1]);
             } else {
-                currentMeeting = meeting;
-                mergedAndCleaned.add(currentMeeting);
+                previousMeeting = meeting;
+                mergedAndCleaned.add(previousMeeting);
             }
         }
         return mergedAndCleaned;
@@ -141,4 +142,23 @@ public class Calendar {
         int mins = minutes % 60;
         return String.format("%02d:%02d", hours, mins);
     }
+
+    /**
+     * Prints the list of available time blocks in a user-friendly format.
+     *
+     * @param availableBlocks The list of time blocks to print.
+     */
+    public void printTimeBlocks(List<String[]> availableBlocks) {
+        if (availableBlocks == null || availableBlocks.isEmpty()) {
+            System.out.println("\nNo available time blocks.");
+            return;
+        }
+
+        String result = availableBlocks.stream()
+                .map(block -> String.format("[\"%s\", \"%s\"]", block[0], block[1]))
+                .collect(Collectors.joining(", ", "[", "]"));
+        System.out.println(result);
+    }
+
+
 }
